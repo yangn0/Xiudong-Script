@@ -49,36 +49,40 @@ if DEBUG!=1:
     post_list=[]
 
     for n in range(int(times)):
-        driver.get(login_url)
-        WebDriverWait(driver, 1000).until(EC.title_is(u"我的"))
-        driver.get(confirm_url)
-        driver.get_log('performance')               #清空
+        try:
+            print("登录第%s个账号"%str(n+1))
+            driver.get(login_url)
+            WebDriverWait(driver, 1000).until(EC.title_is(u"我的"))
+            driver.get(confirm_url)
+            driver.get_log('performance')               #清空
 
-        b=WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, '.payBtn')))
-        time.sleep(1)
-        b.click()
-        
-        time.sleep(1)
+            b=WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, '.payBtn')))
+            time.sleep(1)
+            b.click()
+            
+            time.sleep(1)
 
-        logs = [json.loads(log['message'])['message'] for log in driver.get_log('performance') if (json.loads(log['message'])['message']['method']=='Network.requestWillBeSent' and 'order.json' in json.loads(log['message'])['message']['params']['request']['url']) or json.loads(log['message'])['message']['method']=='Network.requestWillBeSentExtraInfo']
-        headers=dict()
-        for i in logs:
-            if i['method']=='Network.requestWillBeSentExtraInfo' and 'Accept' in i['params']['headers']:
-                for u in i['params']['headers']:
-                    if ':' in u :
-                        headers[u.strip(':')]=i['params']['headers'][u]
-                    else:
-                        headers[u]=i['params']['headers'][u]
-            if i['method']=='Network.requestWillBeSent':
-                order_url=i['params']['request']['url']
-                postData=json.loads(i['params']['request']['postData'])
-        post_list.append([order_url,postData,headers])
-        driver.delete_all_cookies()
-    driver.close()
-
+            logs = [json.loads(log['message'])['message'] for log in driver.get_log('performance') if (json.loads(log['message'])['message']['method']=='Network.requestWillBeSent' and 'order.json' in json.loads(log['message'])['message']['params']['request']['url']) or json.loads(log['message'])['message']['method']=='Network.requestWillBeSentExtraInfo']
+            headers=dict()
+            for i in logs:
+                if i['method']=='Network.requestWillBeSentExtraInfo' and 'Accept' in i['params']['headers']:
+                    for u in i['params']['headers']:
+                        if ':' in u :
+                            headers[u.strip(':')]=i['params']['headers'][u]
+                        else:
+                            headers[u]=i['params']['headers'][u]
+                if i['method']=='Network.requestWillBeSent':
+                    order_url=i['params']['request']['url']
+                    postData=json.loads(i['params']['request']['postData'])
+            post_list.append([order_url,postData,headers])
+            driver.delete_all_cookies()
+        except:
+            print("出错，跳过第%s个账号"%str(n+1))
     with open('post_list.json','w') as f:
         json.dump(post_list,f)
+    
+    driver.close()
 else:
     with open('post_list.json','r') as f:
         post_list=json.load(f)
@@ -86,13 +90,19 @@ else:
 mutex = threading.Lock()
 def worker(i):
     while(1):
-        r=requests.post(i[0],json=i[1],headers=i[2])
-        d=json.loads(r.text)
-        #d['msg']=='售票未开始'
-        mutex.acquire()
-        print(time.asctime(time.localtime(time.time())),i[1]['telephone'],d['msg'])
-        mutex.release()
-        time.sleep(float(wait_time))
+        try:
+            r=requests.post(i[0],json=i[1],headers=i[2])
+            d=json.loads(r.text)
+            #d['msg']=='售票未开始'
+            mutex.acquire()
+            print(time.asctime(time.localtime(time.time())),i[1]['telephone'],d['msg'])
+            mutex.release()
+            time.sleep(float(wait_time))
+        except:
+            mutex.acquire()
+            print(time.asctime(time.localtime(time.time())),i[1]['telephone'],'出错')
+            mutex.release()
+            time.sleep(float(wait_time))
 
 if __name__ == '__main__':
     thread_l=list()
