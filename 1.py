@@ -25,7 +25,7 @@ login_url="https://wap.showstart.com/pages/passport/login/login?redirect=%2Fpage
 
 wait_time=input("等待时间（秒）：")
 
-debug_flag=input("从post_list加载账号(1开启 0关闭）：")
+debug_flag=input("从post_list加载账号(2开启并继续添加 1开启 0关闭）：")
 DEBUG=int(debug_flag)
 
 if DEBUG!=1:
@@ -46,7 +46,12 @@ if DEBUG!=1:
         },
     }
     driver = webdriver.Chrome(desired_capabilities=caps)
-    post_list=[]
+
+    if DEBUG==2:
+        with open('post_list.json','r') as f:
+            post_list=json.load(f)
+    else:
+        post_list=[]
 
     for n in range(int(times)):
         try:
@@ -82,7 +87,10 @@ if DEBUG!=1:
     with open('post_list.json','w') as f:
         json.dump(post_list,f)
     
-    driver.close()
+    try:
+        driver.quit()
+    except:
+        pass
 else:
     with open('post_list.json','r') as f:
         post_list=json.load(f)
