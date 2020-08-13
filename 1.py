@@ -131,12 +131,13 @@ def worker(i):
             mutex.release()
             time.sleep(float(wait_time))
 
+from gevent import monkey; monkey.patch_all()
+import gevent
 
 if __name__ == '__main__':
     thread_l = list()
     for i in post_list:
-        thread_l.append(threading.Thread(target=worker, args=(i,)))
-    for i in thread_l:
-        i.start()
+        thread_l.append(gevent.spawn(worker,i=i))
+    gevent.joinall(thread_l)
     # for i in post_list:
     #     worker(i)
