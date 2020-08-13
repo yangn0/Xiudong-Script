@@ -1,3 +1,5 @@
+from gevent import monkey; monkey.patch_all()
+import gevent
 import json
 from selenium import webdriver
 from pprint import pprint
@@ -110,29 +112,19 @@ else:
     with open('post_list.json', 'r') as f:
         post_list = json.load(f)
 
-mutex = threading.Lock()
-
-
 def worker(i):
     while(1):
         try:
             r = requests.post(i[0], json=i[1], headers=i[2], timeout=(1, 0.1))
             d = json.loads(r.text)
             # d['msg']=='售票未开始'
-            mutex.acquire()
             print(time.asctime(time.localtime(time.time())),
                   i[1]['telephone'], d['msg'])
-            mutex.release()
             time.sleep(float(wait_time))
         except:
-            mutex.acquire()
             print(time.asctime(time.localtime(time.time())),
                   i[1]['telephone'], '出错')
-            mutex.release()
             time.sleep(float(wait_time))
-
-from gevent import monkey; monkey.patch_all()
-import gevent
 
 if __name__ == '__main__':
     thread_l = list()
