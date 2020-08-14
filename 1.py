@@ -1,17 +1,18 @@
-from gevent import monkey; monkey.patch_all()
-import gevent
-import json
-from selenium import webdriver
-from pprint import pprint
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-import requests
-import time
-import threading
-import sys
 import traceback
+import sys
+import threading
+import time
+import requests
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from pprint import pprint
+from selenium import webdriver
+import json
+import gevent
+from gevent import monkey
+monkey.patch_all()
 
 
 def Beijing_time():
@@ -31,6 +32,9 @@ login_url = "https://wap.showstart.com/pages/passport/login/login?redirect=%2Fpa
 wait_time = input("等待时间（秒）：")
 
 debug_flag = input("从post_list加载账号(2开启并继续添加 1开启 0关闭）：")
+
+start_time = input("开售时间：")
+
 DEBUG = int(debug_flag)
 
 if DEBUG != 1:
@@ -112,24 +116,38 @@ else:
     with open('post_list.json', 'r') as f:
         post_list = json.load(f)
 
+
 def worker(i):
     while(1):
         try:
-            r = requests.post(i[0], json=i[1], headers=i[2], timeout=(1, 0.1))
-            d = json.loads(r.text)
-            # d['msg']=='售票未开始'
+            r = requests.post(i[0], json=i[1], headers=i[2],
+                              timeout=(2, 0.001))
+            # d = json.loads(r.text)
+            # print(time.asctime(time.localtime(time.time())),
+            #         i[1]['telephone'], '发包成功')
+        except requests.exceptions.ReadTimeout:
             print(time.asctime(time.localtime(time.time())),
-                  i[1]['telephone'], d['msg'])
-            time.sleep(float(wait_time))
+                  i[1]['telephone'], '响应超时')
+        except ConnectTimeout:
+            print(time.asctime(time.localtime(time.time())),
+                  i[1]['telephone'], '请求超时')
         except:
             print(time.asctime(time.localtime(time.time())),
-                  i[1]['telephone'], '出错')
+                  i[1]['telephone'], traceback.format_exc())
+        finally:
             time.sleep(float(wait_time))
+
 
 if __name__ == '__main__':
     thread_l = list()
     for i in post_list:
-        thread_l.append(gevent.spawn(worker,i=i))
-    gevent.joinall(thread_l)
+        thread_l.append(gevent.spawn(worker, i=i))
+    # 处理时间
+    t1 = time.mktime(time.strptime(start_time, "%Y %m %d %H %M"))
+
+    while(1):
+        if(t1-time.time() <= 2):
+            gevent.joinall(thread_l)
+            break
     # for i in post_list:
     #     worker(i)
