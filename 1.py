@@ -1,18 +1,20 @@
-import traceback
-import sys
-import threading
-import time
-import requests
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from pprint import pprint
-from selenium import webdriver
-import json
-import gevent
 from gevent import monkey
 monkey.patch_all()
+import gevent
+import json
+from selenium import webdriver
+from pprint import pprint
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import requests
+import time
+import threading
+import sys
+import traceback
+
+
 
 
 def Beijing_time():
