@@ -130,7 +130,7 @@ def worker(i):
         except requests.exceptions.ReadTimeout:
             print(time.asctime(time.localtime(time.time())),
                   i[1]['telephone'], '响应超时')
-        except ConnectTimeout:
+        except requests.exceptions.ConnectTimeout:
             print(time.asctime(time.localtime(time.time())),
                   i[1]['telephone'], '请求超时')
         except:
