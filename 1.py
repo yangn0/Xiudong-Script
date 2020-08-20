@@ -1,20 +1,20 @@
+import gevent
 from gevent import monkey
 monkey.patch_all()
-import gevent
-import json
-from selenium import webdriver
-from pprint import pprint
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-import requests
-import time
-import threading
-import sys
+
 import traceback
-
-
+import sys
+import threading
+import time
+import requests
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from pprint import pprint
+from selenium import webdriver
+import json
+import hashlib
 
 
 def Beijing_time():
@@ -35,7 +35,7 @@ wait_time = input("等待时间（秒）：")
 
 debug_flag = input("从post_list加载账号(2开启并继续添加 1开启 0关闭）：")
 
-start_time = input("开售时间：")
+# start_time = input("开售时间：")
 
 DEBUG = int(debug_flag)
 
@@ -122,11 +122,17 @@ else:
 def worker(i):
     while(1):
         try:
+            d = str(int(time.time()*1000))
+            u = '/wap/order/order.json'
+            st = i[2]['st_flpv']
+            l = 'xVgXtOUSos6jzR3mqb4aLHYybqqPFFGfx12r'
+            i[2]['r'] = str(int(time.time()*1000))
+            i[2]['s'] = hashlib.md5((d+u+st+l).encode('utf8')).hexdigest()
             r = requests.post(i[0], json=i[1], headers=i[2],
                               timeout=(2, 0.001))
-            # d = json.loads(r.text)
-            # print(time.asctime(time.localtime(time.time())),
-            #         i[1]['telephone'], '发包成功')
+            d = json.loads(r.text)
+            print(time.asctime(time.localtime(time.time())),
+                  i[1]['telephone'], '发包成功', d)
         except requests.exceptions.ReadTimeout:
             print(time.asctime(time.localtime(time.time())),
                   i[1]['telephone'], '响应超时')
@@ -145,11 +151,8 @@ if __name__ == '__main__':
     for i in post_list:
         thread_l.append(gevent.spawn(worker, i=i))
     # 处理时间
-    t1 = time.mktime(time.strptime(start_time, "%Y %m %d %H %M"))
+    # t1 = time.mktime(time.strptime(start_time, "%Y %m %d %H %M"))
 
-    while(1):
-        if(t1-time.time() <= 2):
-            gevent.joinall(thread_l)
-            break
+    gevent.joinall(thread_l)
     # for i in post_list:
     #     worker(i)
