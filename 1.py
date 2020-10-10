@@ -17,25 +17,25 @@ import json
 import hashlib
 
 
-def Beijing_time():
-    r = requests.get('https://www.baidu.com')
-    t = time.strptime(r.headers['date'], '%a, %d %b %Y %H:%M:%S GMT')
-    return time.mktime(t)+28800
+# def Beijing_time():
+#     r = requests.get('https://www.baidu.com')
+#     t = time.strptime(r.headers['date'], '%a, %d %b %Y %H:%M:%S GMT')
+#     return time.mktime(t)+28800
 
-if(Beijing_time()-1601972022.997835>=86400*1):
-    input("测试期已过，请联系作者。qq:792301982")
-    sys.exit()
+# if(Beijing_time()-1602241842.6866906>=86400*1):
+#     input("测试期已过，请联系作者。qq:792301982")
+#     sys.exit()
 
 
 confirm_url = "https://wap.showstart.com/pages/order/activity/confirm/confirm?sequence=112533&ticketId=9e91b8d67588498ab759f8f3f5ae259a&ticketNum=1&ioswx=1&terminal=app&from=singlemessage&isappinstalled=0"
 login_url = "https://wap.showstart.com/pages/passport/login/login?redirect=%2Fpages%2FmyHome%2FmyHome"
 
 
-wait_time = input("等待时间（秒）：")
+wait_time = input("提前时间（秒）：")
 
 debug_flag = input("从post_list加载账号(2开启并继续添加 1开启 0关闭）：")
 
-start_time = input("开售时间（格式：2020 10 06 16 00）：")
+start_time = input("开售时间（格式：2020 10 06 16 00 10）：")
 
 DEBUG = int(debug_flag)
 
@@ -132,24 +132,24 @@ def worker(i):
             r = requests.post(i[0], json=i[1], headers=i[2],
                               timeout=(2, 0.001))
             d = json.loads(r.text)
-            print(time.asctime(time.localtime(time.time())),
+            print(time.asctime(time.localtime(time.time())),time.time(),
                   i[1]['telephone'], '发包成功', d)
         except requests.exceptions.ReadTimeout:
-            print(time.asctime(time.localtime(time.time())),
+            print(time.asctime(time.localtime(time.time())),time.time(),
                   i[1]['telephone'], '发包成功,不等待响应')
         except requests.exceptions.ConnectTimeout:
-            print(time.asctime(time.localtime(time.time())),
+            print(time.asctime(time.localtime(time.time())),time.time(),
                   i[1]['telephone'], '请求超时')
         except:
-            print(time.asctime(time.localtime(time.time())),
+            print(time.asctime(time.localtime(time.time())),time.time(),
                   i[1]['telephone'], traceback.format_exc())
         finally:
             n-=1
             if(n==0):
-                print(time.asctime(time.localtime(time.time())),
+                print(time.asctime(time.localtime(time.time())),time.time(),
                   i[1]['telephone'], '已发包10次')
                 break
-            time.sleep(float(wait_time))
+            # time.sleep(float(wait_time))
 
 
 if __name__ == '__main__':
@@ -157,11 +157,13 @@ if __name__ == '__main__':
     for i in post_list:
         thread_l.append(gevent.spawn(worker, i=i))
     # 处理时间
-    t1 = time.mktime(time.strptime(start_time, "%Y %m %d %H %M"))
+    t1 = time.mktime(time.strptime(start_time, "%Y %m %d %H %M %S"))
     while(1):
-        if(t1-time.time()<3):
+        if(t1-time.time()<float(wait_time)):
             break
 
     gevent.joinall(thread_l)
+
+    input()
     # for i in post_list:
     #     worker(i)
