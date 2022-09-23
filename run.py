@@ -17,14 +17,7 @@ import json
 import hashlib
 
 
-# def Beijing_time():
-#     r = requests.get('https://www.baidu.com')
-#     t = time.strptime(r.headers['date'], '%a, %d %b %Y %H:%M:%S GMT')
-#     return time.mktime(t)+28800
 
-# if(Beijing_time()-1602241842.6866906>=86400*1):
-#     input("测试期已过，请联系作者。qq:792301982")
-#     sys.exit()
 
 
 confirm_url = "https://wap.showstart.com/pages/order/activity/confirm/confirm?sequence=112533&ticketId=9e91b8d67588498ab759f8f3f5ae259a&ticketNum=1&ioswx=1&terminal=app&from=singlemessage&isappinstalled=0"
@@ -81,7 +74,7 @@ if DEBUG != 1:
             b = WebDriverWait(driver, 10).until(
                 EC.visibility_of_element_located((By.CSS_SELECTOR, '.payBtn')))
             time.sleep(1)
-            # input("输入验证码后，按回车。")
+            input("输入验证码或手机号后，按回车继续。")
 
             driver.get_log('performance')  # 清空
 
